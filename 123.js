@@ -1,1 +1,0 @@
-let vm = new Vue();
