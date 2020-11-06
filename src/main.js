@@ -2,9 +2,10 @@ import Vue from 'vue'
 import App from './App.vue'
 import router from './router'
 import './plugins/element.js'
+import './assets/css/global.css'
 
 Vue.config.productionTip = false
-//test11
+
 new Vue({
   router,
   render: h => h(App)

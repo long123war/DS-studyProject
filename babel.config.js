@@ -10,5 +10,12 @@ module.exports = {
         styleLibraryName: 'theme-chalk'
       }
     ]
+    // [
+    //   'component',
+    //   {
+    //     libraryName: 'element-ui',
+    //     styleLibraryName: 'theme-chalk'
+    //   }
+    // ]
   ]
 }
