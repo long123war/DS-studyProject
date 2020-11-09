@@ -8,28 +8,31 @@
       <!-- 表单区域 -->
       <el-form
         ref="loginForm"
-        :rules="rules"
+        :rules="loginRules"
         :model="login"
         label-width="0px"
         class="login-from"
       >
-        <el-form-item label="" prop="rulesName">
+        <!-- 用户名区 -->
+        <el-form-item label="" prop="name">
           <el-input
             v-model="login.name"
             prefix-icon="iconfont icon-user"
           ></el-input>
         </el-form-item>
-        <el-form-item label="" prop="rulesPassWord">
+        <!-- 密码区 -->
+        <el-form-item label="" prop="passWord">
           <el-input
             v-model="login.passWord"
             prefix-icon="iconfont icon-3702mima"
             type="password"
           ></el-input>
         </el-form-item>
-        <div class="login-btn">
+        <!-- 按钮区 -->
+        <el-form-item label="" class="login-btn">
           <el-button type="primary" @click="userLogin">登录</el-button>
           <el-button type="info" @click="reset">重置</el-button>
-        </div>
+        </el-form-item>
       </el-form>
     </div>
   </div>
@@ -40,24 +43,27 @@ export default {
   data() {
     return {
       login: {
-        name: "肥猪猪",
+        name: "admin",
         passWord: "123456"
       },
-      rules: {
-        rulesName: [
-          //{ required: true, message: "请输入用户名", trigger: "blur" },
+      //表单请求前校验
+      loginRules: {
+        name: [
+          { required: true, message: "请输入用户名", trigger: "blur" },
           { min: 3, max: 10, message: "长度在 3 到 10 个字符", trigger: "blur" }
         ],
-        rulesPassWord: [
+        passWord: [
           { min: 6, max: 15, message: "长度在 6 到 15 个字符", trigger: "blur" }
         ]
       }
     };
   },
   methods: {
+    // 重置按钮逻辑
     reset() {
       this.$refs.loginForm.resetFields();
     },
+    // 用户登录逻辑
     userLogin() {
       this.$refs.loginForm.validate(valid => {
         //console.log(valid);
@@ -71,9 +77,10 @@ export default {
               if (res.data.meta.status != 200) {
                 this.$message.error("登录失败");
               } else {
+                window.sessionStorage.setItem("token", res.data.data.token);
                 this.$message.success("登录成功");
+                this.$router.push("/home");
               }
-
               console.log(res.data);
             })
             .catch(err => {
