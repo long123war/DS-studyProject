@@ -13,14 +13,14 @@
         label-width="0px"
         class="login-from"
       >
-        <!-- 用户名区 -->
+        <!-- 用户名区域 -->
         <el-form-item label="" prop="name">
           <el-input
             v-model="login.name"
             prefix-icon="iconfont icon-user"
           ></el-input>
         </el-form-item>
-        <!-- 密码区 -->
+        <!-- 密码区域 -->
         <el-form-item label="" prop="passWord">
           <el-input
             v-model="login.passWord"
@@ -28,7 +28,7 @@
             type="password"
           ></el-input>
         </el-form-item>
-        <!-- 按钮区 -->
+        <!-- 按钮区域 -->
         <el-form-item label="" class="login-btn">
           <el-button type="primary" @click="userLogin">登录</el-button>
           <el-button type="info" @click="reset">重置</el-button>
