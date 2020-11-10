@@ -61,10 +61,12 @@ export default {
   methods: {
     // 重置按钮逻辑
     reset() {
+      // $refs.表单ref引用名.resetFields()可以重置表单。
       this.$refs.loginForm.resetFields();
     },
     // 用户登录逻辑
     userLogin() {
+      // $refs.表单ref引用名.validate()方法返回预验证结果。
       this.$refs.loginForm.validate(valid => {
         //console.log(valid);
         if (valid == true) {
