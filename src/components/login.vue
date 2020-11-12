@@ -83,7 +83,7 @@ export default {
                 this.$message.success("登录成功");
                 this.$router.push("/home");
               }
-              console.log(res.data);
+              //console.log(res.data);
             })
             .catch(err => {
               console.error(err);

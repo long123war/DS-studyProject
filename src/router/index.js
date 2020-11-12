@@ -3,11 +3,22 @@ import VueRouter from 'vue-router'
 import login from '../components/login.vue'
 import axios from 'axios'
 import home from '../components/home.vue'
+import welcome from '../components/welcome.vue'
 
 Vue.use(VueRouter)
 Vue.prototype.$http = axios
 //配置請求的默认路径
-axios.defaults.baseURL='http://127.0.0.1:8888/api/private/v1/'
+axios.defaults.baseURL='http://127.0.0.1:8888/api/private/v1/';
+axios.interceptors.request.use(config => {
+// 发送请求时为请求头添加token
+config.headers.Authorization = window.sessionStorage.getItem("token");
+// console.log(config);
+return config;
+},error => {
+// Do something with request error
+return Promise.reject(error);
+});
+
 const routes = [
   {
     path: '/',
@@ -21,7 +32,11 @@ const routes = [
   {
     path: '/home',
     name: 'home',
-    component: home
+    component: home,
+    redirect: '/welcome',
+    children:[
+      { path: '/welcome', name:'welcome', component:welcome }
+    ]
   }
 ]
 
