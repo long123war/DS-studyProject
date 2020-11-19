@@ -22,6 +22,7 @@
           :collapse="changeMenu"
           :collapse-transition="false"
           :router="true"
+          :default-active="activePath"
         >
           <!-- 侧面一级菜单 -->
           <el-submenu
@@ -39,6 +40,7 @@
               :index="'/' + i.path"
               v-for="i in item.children"
               :key="i.id"
+              @click="saveActivePath('/' + i.path)"
             >
               <template slot="title">
                 <i class="el-icon-menu"></i>
@@ -66,17 +68,22 @@ export default {
         "102": "iconfont icon-danju",
         "145": "iconfont icon-baobiao"
       },
-      changeMenu: false
+      changeMenu: false,
+      activePath: ""
     };
   },
+  // 在实例创建完成后被立即调用
   created() {
     this.getList();
+    this.activePath = window.sessionStorage.getItem("activePath");
   },
   methods: {
+    // 退出登录
     logOut() {
       window.sessionStorage.clear();
       this.$router.push("/login");
     },
+    // 获取侧边菜单列表
     getList() {
       this.$http
         .get("menus")
@@ -85,14 +92,20 @@ export default {
             this.menus = res.data.data;
           }
           // console.log(res);
-          console.log(this.menus);
+          // console.log(this.menus);
         })
         .catch(err => {
           console.error(err);
         });
     },
+    // 折叠按钮点击
     folding() {
       this.changeMenu = !this.changeMenu;
+    },
+    //点击二次菜单时保存index值。记录激活状态
+    saveActivePath(activePath) {
+      window.sessionStorage.setItem("activePath", activePath);
+      this.activePath = activePath;
     }
   }
 };
