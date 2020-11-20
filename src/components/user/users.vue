@@ -16,13 +16,23 @@
       </div>
       <template>
         <el-table :data="userList" stripe style="width: 100%" border>
+          <el-table-column type="index" label="序号" width="50" align="center">
+          </el-table-column>
           <el-table-column prop="username" label="姓名" width="180">
           </el-table-column>
           <el-table-column prop="email" label="邮箱" width="180">
           </el-table-column>
           <el-table-column prop="mobile" label="电话"> </el-table-column>
           <el-table-column prop="role_name" label="角色"> </el-table-column>
-          <el-table-column prop="mg_state" label="状态"> </el-table-column>
+          <el-table-column label="状态">
+            <template slot-scope="scope">
+              <el-switch
+                v-model="scope.row.mg_state"
+                @change="changeUserState(scope.row)"
+              >
+              </el-switch>
+            </template>
+          </el-table-column>
           <el-table-column prop="mg_state" label="操作"> </el-table-column>
         </el-table>
       </template>
@@ -61,6 +71,18 @@ export default {
         })
         .catch(err => {
           this.$message.error("获取用户信息失败");
+        });
+    },
+    changeUserState(userInfo) {
+      this.$http
+        .put(`users/${userInfo.id}/state/${userInfo.mg_state}`)
+        .then(res => {
+          this.$message.success("状态修改成功！");
+        })
+
+        .catch(err => {
+          this.$message.success("状态修改失败！");
+          userInfo.mg_state = !userInfo.mg_state;
         });
     }
   }

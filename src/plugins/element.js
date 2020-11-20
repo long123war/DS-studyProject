@@ -17,7 +17,8 @@ import {
     BreadcrumbItem,
     Card,
     Table,
-    TableColumn
+    TableColumn,
+    Switch
 } from 'element-ui'
 
 Vue.use(Button)
@@ -37,4 +38,5 @@ Vue.use(BreadcrumbItem)
 Vue.use(Card)
 Vue.use(Table)
 Vue.use(TableColumn)
+Vue.use(Switch)
 Vue.prototype.$message = Message
