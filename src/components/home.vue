@@ -121,6 +121,9 @@ export default {
     color: #fff;
     font-size: 20px;
     padding-left: 0px;
+    .el-button {
+      margin: 10px;
+    }
     > div {
       display: flex;
       align-items: center;
