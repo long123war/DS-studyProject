@@ -5,6 +5,8 @@ import axios from 'axios'
 import home from '../components/home.vue'
 import welcome from '../components/welcome.vue'
 import users from '../components/user/users.vue'
+import rights from '../components/power/rights.vue'
+import roles from '../components/power/roles.vue'
 
 Vue.use(VueRouter)
 Vue.prototype.$http = axios
@@ -37,7 +39,9 @@ const routes = [
     redirect: '/welcome',
     children:[
       { path: '/welcome', name:'welcome', component:welcome },
-      { path: '/users', name:'users', component:users }
+      { path: '/users', name:'users', component:users },
+      { path: '/rights', name:'rights', component:rights },
+      { path: '/roles', name:'roles', component:roles }
     ]
   }
 ]
