@@ -18,11 +18,11 @@
                 v-for="(item1, i1) in scoped.row.children"
                 :key="item1.id"
                 closable
-                :class="['bottom-tag', i1 === 0 ? 'top-gat' : '']"
+                :class="['tag-center', 'bottom-tag', i1 === 0 ? 'top-gat' : '']"
               >
                 <!-- 一级权限 -->
                 <el-col :span="5">
-                  <el-tag>
+                  <el-tag @close="removeTag(scoped.row, item1.id)" closable>
                     {{ item1.authName }}
                   </el-tag>
                   <i class="el-icon-caret-right"></i>
@@ -37,7 +37,11 @@
                   >
                     <!-- 二级权限 -->
                     <el-col :span="6">
-                      <el-tag type="success">
+                      <el-tag
+                        @close="removeTag(scoped.row, item2.id)"
+                        type="success"
+                        closable
+                      >
                         {{ item2.authName }}
                       </el-tag>
                       <i class="el-icon-caret-right"></i>
@@ -49,6 +53,7 @@
                         :key="item3.id"
                         closable
                         type="warning"
+                        @close="removeTag(scoped.row, item3.id)"
                       >
                         {{ item3.authName }}
                       </el-tag>
@@ -64,19 +69,46 @@
           <el-table-column prop="roleDesc" label="角色描述"> </el-table-column>
           <el-table-column label="操作">
             <!-- 操作按钮 -->
-            <template>
+            <template v-slot:default="scoped">
               <el-button type="primary" icon="el-icon-edit" size="mini"
                 >编辑</el-button
               >
               <el-button type="danger" icon="el-icon-delete" size="mini"
                 >删除</el-button
               >
-              <el-button type="warning" icon="el-icon-setting" size="mini"
+              <el-button
+                type="warning"
+                icon="el-icon-setting"
+                size="mini"
+                @click="setRolePermissions(scoped.row)"
                 >分配权限</el-button
               >
             </template>
           </el-table-column>
         </el-table>
+      </template>
+      <!-- 分配权限对话框 -->
+      <template>
+        <el-dialog
+          title="分配角色权限"
+          :visible.sync="rolePermissions"
+          width="50%"
+          @close="resetRolePermissions()"
+        >
+          <el-tree
+            :data="rolePermissionsList"
+            :props="roleProps"
+            show-checkbox
+            default-expand-all
+            node-key="id"
+            :default-checked-keys="defaultCheckRole"
+          ></el-tree>
+          <!-- 对话框底部按钮 -->
+          <span slot="footer" class="dialog-footer">
+            <el-button @click="rolePermissions = false">取 消</el-button>
+            <el-button type="primary" @click="rolePermissions">确 定</el-button>
+          </span>
+        </el-dialog>
       </template>
     </el-card>
   </div>
@@ -89,7 +121,14 @@ export default {
   },
   data() {
     return {
-      rolesList: []
+      rolesList: [],
+      rolePermissionsList: [],
+      roleProps: {
+        children: "children",
+        label: "authName"
+      },
+      defaultCheckRole: [],
+      rolePermissions: false
     };
   },
   methods: {
@@ -106,6 +145,68 @@ export default {
         .catch(err => {
           console.error(err);
         });
+    },
+    // 删除角色权限
+    removeTag(roleId, rightId) {
+      // 删除二次确认弹框
+      this.$confirm("此操作将永久删除该角色权限, 是否继续?", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning"
+      })
+        // 确认删除请求发送
+        .then(res => {
+          this.$http
+            .delete(`roles/${roleId.id}/rights/${rightId}`)
+            .then(res => {
+              return res.data;
+            })
+            .then(res => {
+              if (res.meta.status !== 200) {
+                return this.$message.error("删除失败!!");
+              }
+              roleId.children = res.data;
+              this.$message.success("删除成功!!");
+            })
+            .catch(err => {
+              console.error(err);
+            });
+        })
+        .catch(err => err);
+    },
+    //角色分配权限
+    setRolePermissions(roleInfo) {
+      this.$http
+        .get(`rights/tree`)
+        .then(res => {
+          return res.data;
+        })
+        .then(res => {
+          if (res.meta.status !== 200) {
+            return this.$message.error("获取权限列表失败！");
+          }
+          this.rolePermissionsList = res.data;
+        })
+        .catch(err => {
+          console.error(err);
+        });
+      this.getRoleThreePermissions(roleInfo, this.defaultCheckRole);
+      this.rolePermissions = true;
+    },
+    // 递归获取角色所有的三级权限
+    getRoleThreePermissions(roleInfo, roleArr) {
+      // 如果节点没有children证明是最后的三级权限，把id加入roleArr数组中
+      if (!roleInfo.children) {
+        return roleArr.push(roleInfo.id);
+      }
+      for (let item of roleInfo.children) {
+        // 否则继续向下循环
+        this.getRoleThreePermissions(item, roleArr);
+      }
+    },
+    // 关闭角色分配对话框时
+    resetRolePermissions() {
+      this.defaultCheckRole = [];
     }
   }
 };
@@ -123,5 +224,9 @@ export default {
 }
 .bottom-tag {
   border-top: 1px solid #eee;
+}
+.tag-center {
+  display: flex;
+  align-items: center;
 }
 </style>
