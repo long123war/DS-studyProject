@@ -102,11 +102,14 @@
             default-expand-all
             node-key="id"
             :default-checked-keys="defaultCheckRole"
+            ref="roleTree"
           ></el-tree>
           <!-- 对话框底部按钮 -->
           <span slot="footer" class="dialog-footer">
             <el-button @click="rolePermissions = false">取 消</el-button>
-            <el-button type="primary" @click="rolePermissions">确 定</el-button>
+            <el-button type="primary" @click="roleAuthorization"
+              >确 定</el-button
+            >
           </span>
         </el-dialog>
       </template>
@@ -127,8 +130,11 @@ export default {
         children: "children",
         label: "authName"
       },
+      // 点击分配权限时，用来保存角色对应权限的数组
       defaultCheckRole: [],
-      rolePermissions: false
+      rolePermissions: false,
+      // 点击分配权限时先把角色id保存下来，方便之后发送请求使用
+      roleId: ""
     };
   },
   methods: {
@@ -174,8 +180,9 @@ export default {
         })
         .catch(err => err);
     },
-    //角色分配权限
+    //点击角色分配权限触发
     setRolePermissions(roleInfo) {
+      //发送请求获取所有权限列表
       this.$http
         .get(`rights/tree`)
         .then(res => {
@@ -185,12 +192,14 @@ export default {
           if (res.meta.status !== 200) {
             return this.$message.error("获取权限列表失败！");
           }
+          // 赋值，再页面渲染出所有权限列表
           this.rolePermissionsList = res.data;
         })
         .catch(err => {
           console.error(err);
         });
       this.getRoleThreePermissions(roleInfo, this.defaultCheckRole);
+      this.roleId = roleInfo.id;
       this.rolePermissions = true;
     },
     // 递归获取角色所有的三级权限
@@ -207,6 +216,30 @@ export default {
     // 关闭角色分配对话框时
     resetRolePermissions() {
       this.defaultCheckRole = [];
+    },
+    // 分配权限对话框确定时发起请求给角色授权
+    roleAuthorization() {
+      const roleKeys = [
+        ...this.$refs.roleTree.getCheckedKeys(),
+        ...this.$refs.roleTree.getHalfCheckedNodes()
+      ];
+      const roleKeysString = roleKeys.join(",");
+      this.$http
+        .post(`roles/${this.roleId}/rights`, { rids: roleKeysString })
+        .then(res => {
+          return res.data;
+        })
+        .then(res => {
+          if (res.meta.status !== 200) {
+            return this.$message.error("更新角色权限失败！");
+          }
+          this.$message.success("更新角色权限成功！");
+          this.getRolesList();
+        })
+        .catch(err => {
+          console.error(err);
+        });
+      this.rolePermissions = false;
     }
   }
 };

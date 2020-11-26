@@ -67,11 +67,12 @@
                 placement="top-start"
                 :enterable="false"
               >
-                <!-- 用户详细设置 -->
+                <!-- 分配角色 -->
                 <el-button
                   type="warning"
                   icon="el-icon-setting"
                   size="mini"
+                  @click="clickRoleAllot(scopeDate.row)"
                 ></el-button>
               </el-tooltip>
             </template>
@@ -170,6 +171,35 @@
           </span>
         </el-dialog>
       </template>
+      <!-- 分配角色对话框 -->
+      <template>
+        <el-dialog
+          title="分配角色"
+          :visible.sync="roleAllot"
+          width="50%"
+          @close="resetRoleAllot()"
+        >
+          <p>当前的用户：{{ userInfo.username }}</p>
+          <p>当前的角色：{{ userInfo.role_name }}</p>
+          <p>
+            分配新角色：
+            <el-select v-model="roles" placeholder="请选择">
+              <el-option
+                v-for="item in rolesList"
+                :key="item.id"
+                :label="item.roleName"
+                :value="item.id"
+              >
+              </el-option>
+            </el-select>
+          </p>
+          <!-- 对话框底部按钮 -->
+          <span slot="footer" class="dialog-footer">
+            <el-button @click="roleAllot = false">取 消</el-button>
+            <el-button type="primary" @click="setRoleAllot">确 定</el-button>
+          </span>
+        </el-dialog>
+      </template>
     </el-card>
   </div>
 </template>
@@ -256,7 +286,11 @@ export default {
       userList: [],
       total: 0,
       dialogVisible: false,
-      changeUserdata: false
+      changeUserdata: false,
+      roleAllot: false,
+      userInfo: {},
+      rolesList: [],
+      roles: ""
     };
   },
   methods: {
@@ -390,6 +424,48 @@ export default {
         }
       });
       this.changeUserdata = false;
+    },
+    // 点击分配角色按钮触发
+    clickRoleAllot(userInfo) {
+      //把信息保存到data中。
+      this.userInfo = userInfo;
+      //获取角色列表。分配用户角色时需要用到
+      this.$http
+        .get("roles")
+        .then(res => {
+          return res.data;
+        })
+        .then(res => {
+          if (res.meta.status !== 200) {
+            return this.$message.error("获取角色列表失败！");
+          }
+          this.rolesList = res.data;
+        })
+        .catch(err => {
+          console.error(err);
+        });
+      this.roleAllot = true;
+    },
+    // 请求设置分配角色
+    setRoleAllot() {
+      this.$http
+        .put(`users/${this.userInfo.id}/role`, { rid: this.roles })
+        .then(res => {
+          console.log(res);
+          if (res.data.meta.status !== 200) {
+            return this.$message.error("设置分配角色失败");
+          }
+          this.$message.success("设置分配角色成功！");
+          this.getList();
+        })
+        .catch(err => {
+          console.error(err);
+        });
+      this.roleAllot = false;
+    },
+    //关闭角色分配对话框触发
+    resetRoleAllot() {
+      this.roles = "";
     }
   }
 };
