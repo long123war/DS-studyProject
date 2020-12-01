@@ -7,7 +7,10 @@ import welcome from '../components/welcome.vue'
 import users from '../components/user/users.vue'
 import rights from '../components/power/rights.vue'
 import roles from '../components/power/roles.vue'
+import categories from '../components/goods/Cate.vue'
+import ZkTable from 'vue-table-with-tree-grid'
 
+Vue.use(ZkTable)
 Vue.use(VueRouter)
 Vue.prototype.$http = axios
 //配置請求的默认路径
@@ -41,7 +44,8 @@ const routes = [
       { path: '/welcome', name:'welcome', component:welcome },
       { path: '/users', name:'users', component:users },
       { path: '/rights', name:'rights', component:rights },
-      { path: '/roles', name:'roles', component:roles }
+      { path: '/roles', name:'roles', component:roles },
+      { path: '/categories', name:'categories', component:categories }
     ]
   }
 ]
