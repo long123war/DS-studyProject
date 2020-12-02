@@ -8,7 +8,9 @@
     </el-breadcrumb>
     <!-- 主内容卡片 -->
     <el-card>
-      <el-button type="primary">添加分类</el-button>
+      <el-button type="primary" @click="sortingDialogVisible"
+        >添加分类</el-button
+      >
       <!-- 表格主体 -->
       <zk-table
         ref="table"
@@ -50,6 +52,42 @@
         </template>
       </zk-table>
     </el-card>
+    <!-- 添加分类对话框 -->
+    <template>
+      <el-dialog
+        title="添加分类"
+        :visible.sync="dialogVisible"
+        width="50%"
+        @close="resetDialog()"
+      >
+        <!-- 对话框内的表单 -->
+        <el-form
+          ref="dialogForm"
+          :model="dialogForm"
+          :rules="dialogRules"
+          label-width="100px"
+          status-icon
+        >
+          <el-form-item label="分类名称：" prop="cat_name">
+            <el-input v-model="dialogForm.cat_name"></el-input>
+          </el-form-item>
+          <el-form-item label="父级分类：">
+            <el-cascader
+              v-model="fatherSortingKey"
+              :options="fatherSortingList"
+              :props="cascaderProps"
+              @change="fatherSortingChange"
+              clearable
+            ></el-cascader>
+          </el-form-item>
+        </el-form>
+        <!-- 对话框底部按钮 -->
+        <span slot="footer" class="dialog-footer">
+          <el-button @click="dialogVisible = false">取 消</el-button>
+          <el-button type="primary" @click="addSorting">确 定</el-button>
+        </span>
+      </el-dialog>
+    </template>
   </div>
 </template>
 
@@ -70,6 +108,20 @@ export default {
       total: "",
       // 获取到的商品分类数据列表
       cateList: [],
+      // 添加分类对话框弹出控制
+      dialogVisible: false,
+      // 选中父级分类的ID数组
+      fatherSortingKey: [],
+      // 获取父级分类数据列表（2级）
+      fatherSortingList: [],
+      // 级联选择器的配置对象
+      cascaderProps: {
+        value: "cat_pid",
+        label: "cat_name",
+        children: "children",
+        expandTrigger: "hover",
+        checkStrictly: true
+      },
       // 表格的列数据
       columns: [
         {
@@ -91,7 +143,20 @@ export default {
           type: "template",
           template: "button"
         }
-      ]
+      ],
+      // 添加分类表单对象
+      dialogForm: {
+        cat_name: "",
+        cat_pid: "",
+        cat_level: ""
+      },
+      // 表单预校验对象
+      dialogRules: {
+        cat_name: [
+          { required: true, message: "请输入用户名", trigger: "blur" },
+          { min: 2, max: 15, message: "长度在 2 到 15 个字符", trigger: "blur" }
+        ]
+      }
     };
   },
   methods: {
@@ -103,7 +168,6 @@ export default {
           return res.data;
         })
         .then(res => {
-          console.log(res);
           if (res.meta.status !== 200) {
             return this.$message.error("获取商品分类数据失败！");
           }
@@ -113,6 +177,35 @@ export default {
         .catch(err => {
           console.error(err);
         });
+    },
+    // 添加分类按钮触发
+    sortingDialogVisible() {
+      this.$http
+        .get("categories", { params: { type: 2 } })
+        .then(res => {
+          return res.data;
+        })
+        .then(res => {
+          console.log(res);
+          if (res.meta.status !== 200) {
+            return this.$message.error("获取商品分类数据列表失败！！！");
+          }
+          this.fatherSortingList = res.data;
+        })
+        .catch(err => {
+          console.error(err);
+        });
+      this.dialogVisible = true;
+    },
+    // 关闭添加分类对话空时
+    resetDialog() {
+      this.$refs.dialogForm.resetFields();
+    },
+    // 添加分类对话框确定时
+    addSorting() {},
+    // 当添加分类对话框内，级联选择器发生变化时
+    fatherSortingChange() {
+      console.log(this.fatherSortingKey);
     }
   }
 };
@@ -121,5 +214,11 @@ export default {
 <style lang="less" scoped>
 .el-card {
   margin-top: 7px;
+  .zk-table {
+    margin-top: 15px;
+  }
+}
+.el-cascader {
+  width: 100%;
 }
 </style>
