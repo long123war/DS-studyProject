@@ -52,6 +52,21 @@
         </template>
       </zk-table>
     </el-card>
+    <!-- 分页 -->
+    <template>
+      <div class="block">
+        <el-pagination
+          @size-change="cateSizeChange"
+          @current-change="cateCurrentChange"
+          :current-page="cateListKey.pagenum"
+          :page-sizes="[5, 10, 15, 20]"
+          :page-size="cateListKey.pagesize"
+          layout="total, sizes, prev, pager, next, jumper"
+          :total="total"
+        >
+        </el-pagination>
+      </div>
+    </template>
     <!-- 添加分类对话框 -->
     <template>
       <el-dialog
@@ -71,9 +86,9 @@
           <el-form-item label="分类名称：" prop="cat_name">
             <el-input v-model="dialogForm.cat_name"></el-input>
           </el-form-item>
-          <el-form-item label="父级分类：">
+          <el-form-item label="父级分类：" prop="fatherSortingKey">
             <el-cascader
-              v-model="fatherSortingKey"
+              v-model="dialogForm.fatherSortingKey"
               :options="fatherSortingList"
               :props="cascaderProps"
               @change="fatherSortingChange"
@@ -105,7 +120,7 @@ export default {
         pagesize: 5
       },
       // 数据库一共有多少条数据
-      total: "",
+      total: 1,
       // 获取到的商品分类数据列表
       cateList: [],
       // 添加分类对话框弹出控制
@@ -116,11 +131,11 @@ export default {
       fatherSortingList: [],
       // 级联选择器的配置对象
       cascaderProps: {
-        value: "cat_pid",
+        checkStrictly: true,
+        value: "cat_id",
         label: "cat_name",
         children: "children",
-        expandTrigger: "hover",
-        checkStrictly: true
+        expandTrigger: "hover"
       },
       // 表格的列数据
       columns: [
@@ -148,7 +163,8 @@ export default {
       dialogForm: {
         cat_name: "",
         cat_pid: "",
-        cat_level: ""
+        cat_level: "",
+        fatherSortingKey: []
       },
       // 表单预校验对象
       dialogRules: {
@@ -197,15 +213,64 @@ export default {
         });
       this.dialogVisible = true;
     },
-    // 关闭添加分类对话空时
+    // 关闭添加分类对话框时
     resetDialog() {
       this.$refs.dialogForm.resetFields();
     },
     // 添加分类对话框确定时
-    addSorting() {},
+    addSorting() {
+      this.$refs.dialogForm.validate(vali => {
+        if (vali === true) {
+          this.$http
+            .post("categories", this.dialogForm)
+            .then(res => {
+              return res.data;
+            })
+            .then(res => {
+              if (res.meta.status !== 201) {
+                this.$message.error("添加分类失败！");
+              }
+              this.$message.success("添加分类成功");
+              this.getCateList();
+              this.dialogVisible = false;
+            })
+            .catch(err => {
+              console.error(err);
+            });
+        } else {
+          this.$message.error("未通过预验证！");
+          return;
+        }
+      });
+    },
     // 当添加分类对话框内，级联选择器发生变化时
     fatherSortingChange() {
-      console.log(this.fatherSortingKey);
+      console.log(this.dialogForm.fatherSortingKey);
+      // 如果级联选择器的数组长度大于0，证明选择了分级，添加分类到对应分级。
+      // 如果长度为0，就是没选择分级，添加分类到父级
+      if (this.dialogForm.fatherSortingKey.length > 0) {
+        // 请求需要的父ID=级联数组[长度-1]
+        this.dialogForm.cat_pid = this.dialogForm.fatherSortingKey[
+          this.dialogForm.fatherSortingKey.length - 1
+        ];
+        // 请求需要的分级，以API说明为准
+        this.dialogForm.cat_level = this.dialogForm.fatherSortingKey.length;
+        console.log(this.dialogForm);
+        return;
+      } else {
+        this.dialogForm.cat_pid = 0;
+        this.dialogForm.cat_level = 0;
+      }
+    },
+    // 监听分页，每页显示多少条信息
+    cateSizeChange(newPageSize) {
+      this.cateListKey.pagesize = newPageSize;
+      this.getCateList();
+    },
+    // 监听分页，现在是第几页
+    cateCurrentChange(newPageNum) {
+      this.cateListKey.pagenum = newPageNum;
+      this.getCateList();
     }
   }
 };
@@ -213,7 +278,7 @@ export default {
 
 <style lang="less" scoped>
 .el-card {
-  margin-top: 7px;
+  margin: 15px 0;
   .zk-table {
     margin-top: 15px;
   }
