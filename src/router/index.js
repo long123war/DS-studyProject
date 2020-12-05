@@ -8,6 +8,7 @@ import users from '../components/user/users.vue'
 import rights from '../components/power/rights.vue'
 import roles from '../components/power/roles.vue'
 import categories from '../components/goods/Cate.vue'
+import params from '../components/goods/params.vue'
 import ZkTable from 'vue-table-with-tree-grid'
 
 Vue.use(ZkTable)
@@ -45,7 +46,8 @@ const routes = [
       { path: '/users', name:'users', component:users },
       { path: '/rights', name:'rights', component:rights },
       { path: '/roles', name:'roles', component:roles },
-      { path: '/categories', name:'categories', component:categories }
+      { path: '/categories', name:'categories', component:categories },
+      { path: '/params', name:'params', component:params }
     ]
   }
 ]
