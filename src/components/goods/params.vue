@@ -32,6 +32,68 @@
               @click="dialogVisible"
               >添加参数</el-button
             >
+            <!-- 表格 -->
+            <el-table :data="paramsData" style="width: 100%" border>
+              <!-- 展开行 -->
+              <el-table-column type="expand">
+                <template v-slot:default="scope">
+                  <el-tag
+                    v-for="(tag, i) in paramsVals(scope.row)"
+                    :key="i"
+                    closable
+                    type=""
+                    @close="removeParamsTag(scope.row, i)"
+                  >
+                    {{ tag }}
+                  </el-tag>
+                  <el-input
+                    class="input-new-tag"
+                    v-if="scope.row.inputTagVisible"
+                    v-model="scope.row.inputTagValue"
+                    ref="saveTagInput"
+                    size="small"
+                    @keyup.enter.native="handleInputConfirm(scope.row)"
+                    @blur="handleInputConfirm(scope.row)"
+                  >
+                  </el-input>
+                  <el-button
+                    v-else
+                    class="button-new-tag"
+                    size="small"
+                    @click="showTagInput(scope.row)"
+                    >+ New Tag</el-button
+                  >
+                </template>
+              </el-table-column>
+              <!-- 表格内容 -->
+              <el-table-column
+                type="index"
+                label="序号"
+                width="50"
+                align="center"
+              >
+              </el-table-column>
+              <el-table-column prop="attr_name" label="参数名称">
+              </el-table-column>
+              <el-table-column prop="address" label="操作">
+                <template v-slot:default="scope">
+                  <el-button
+                    type="primary"
+                    icon="el-icon-edit"
+                    size="small"
+                    @click="editDialogVisible(scope.row)"
+                    >编辑</el-button
+                  >
+                  <el-button
+                    type="danger"
+                    icon="el-icon-delete"
+                    size="small"
+                    @click="deleteParams(scope.row)"
+                    >删除</el-button
+                  >
+                </template>
+              </el-table-column>
+            </el-table>
           </el-tab-pane>
           <el-tab-pane label="静态参数" name="only">
             <el-button
@@ -40,47 +102,70 @@
               @click="dialogVisible"
               >添加属性</el-button
             >
+            <!-- 表格 -->
+            <el-table :data="onlyParamData" style="width: 100%" border>
+              <!-- 展开行 -->
+              <el-table-column type="expand">
+                <template v-slot:default="scope">
+                  <el-tag
+                    v-for="(tag, i) in paramsVals(scope.row)"
+                    :key="i"
+                    closable
+                    type=""
+                    @close="removeParamsTag(scope.row, i)"
+                  >
+                    {{ tag }}
+                  </el-tag>
+                  <el-input
+                    class="input-new-tag"
+                    v-if="scope.row.inputTagVisible"
+                    v-model="scope.row.inputTagValue"
+                    ref="saveTagInput"
+                    size="small"
+                    @keyup.enter.native="handleInputConfirm(scope.row)"
+                    @blur="handleInputConfirm(scope.row)"
+                  >
+                  </el-input>
+                  <el-button
+                    v-else
+                    class="button-new-tag"
+                    size="small"
+                    @click="showTagInput(scope.row)"
+                    >+ New Tag</el-button
+                  >
+                </template>
+              </el-table-column>
+              <!-- 表格内容 -->
+              <el-table-column
+                type="index"
+                label="序号"
+                width="50"
+                align="center"
+              >
+              </el-table-column>
+              <el-table-column prop="attr_name" label="参数名称">
+              </el-table-column>
+              <el-table-column prop="address" label="操作">
+                <template v-slot:default="scope">
+                  <el-button
+                    type="primary"
+                    icon="el-icon-edit"
+                    size="small"
+                    @click="editDialogVisible(scope.row)"
+                    >编辑</el-button
+                  >
+                  <el-button
+                    type="danger"
+                    icon="el-icon-delete"
+                    size="small"
+                    @click="deleteParams(scope.row)"
+                    >删除</el-button
+                  >
+                </template>
+              </el-table-column>
+            </el-table>
           </el-tab-pane>
         </el-tabs>
-        <!-- 表格 -->
-        <el-table :data="paramsData" style="width: 100%" border>
-          <!-- 展开行 -->
-          <el-table-column type="expand">
-            <template v-slot:default="scope">
-              <div>{{ scope.row }}</div>
-              <!-- <el-tag
-                v-for="tag in scope.row"
-                :key="tag.attr_id"
-                closable
-                type=""
-              >
-                {{ tag.attr_vals }}
-              </el-tag> -->
-            </template>
-          </el-table-column>
-          <!-- 表格内容 -->
-          <el-table-column type="index" label="序号" width="50" align="center">
-          </el-table-column>
-          <el-table-column prop="attr_name" label="参数名称"> </el-table-column>
-          <el-table-column prop="address" label="操作">
-            <template v-slot:default="scope">
-              <el-button
-                type="primary"
-                icon="el-icon-edit"
-                size="small"
-                @click="editDialogVisible(scope.row)"
-                >编辑</el-button
-              >
-              <el-button
-                type="danger"
-                icon="el-icon-delete"
-                size="small"
-                @click="deleteParams(scope.row)"
-                >删除</el-button
-              >
-            </template>
-          </el-table-column>
-        </el-table>
       </template>
       <!-- 添加分类和属性对话框 -->
       <el-dialog
@@ -170,8 +255,10 @@ export default {
       },
       // 标签页绑定name
       paramsActiveName: "many",
-      // 商品参数列表
+      // 动态商品参数列表
       paramsData: [],
+      // 静态商品参数列表
+      onlyParamData: [],
       // 控制添加参数/属性对话框的开关
       paramsVisible: false,
       // 添加动态参数货静态属性表单的绑定对象
@@ -195,6 +282,10 @@ export default {
           { required: true, message: "请输入活动名称", trigger: "blur" }
         ]
       }
+      // // 控制添加tag按钮开关
+      // inputTagVisible: false,
+      // // 添加tag标签数据绑定
+      // inputTagValue: ""
     };
   },
   methods: {
@@ -217,7 +308,6 @@ export default {
     },
     // 级联选择器发生变化时
     handleChange() {
-      console.log(this.cascaderValue);
       this.getParamsData();
     },
     // 标签页变化时触发
@@ -234,11 +324,28 @@ export default {
           return res.data;
         })
         .then(res => {
-          console.log(res);
           if (res.meta.status !== 200) {
             return this.$message.error("获取商品参数列表失败！");
+          } else {
+            for (let i of res.data) {
+              // this.$set(i, "inputTagVisible", false);
+              // this.$set(i, "inputTagValue", "");
+              i.inputTagVisible = false;
+              i.inputTagValue = "";
+            }
+            // res.data.forEach(item => {
+            //   item.inputTagVisible = false;
+            //   item.inputTagValue = "";
+            // });
           }
-          this.paramsData = res.data;
+
+          if (this.paramsActiveName === "many") {
+            this.paramsData = res.data;
+          } else {
+            this.onlyParamData = res.data;
+          }
+
+          // console.log(this.paramsData);
         })
         .catch(err => {
           console.error(err);
@@ -284,7 +391,6 @@ export default {
             return res.data;
           })
           .then(res => {
-            console.log(res);
             if (res.meta.status !== 201) {
               this.$message.error("添加参数或属性失败！");
               return;
@@ -316,7 +422,6 @@ export default {
             return res.data;
           })
           .then(res => {
-            console.log(res);
             if (res.meta.status !== 200) {
               return this.$message.error("编辑提交参数失败！");
             }
@@ -363,6 +468,83 @@ export default {
         .catch(() => {
           this.$message("取消删除！");
         });
+    },
+    // 参数属性tag字符串转数组
+    changeParamsVals(row) {
+      if (row.attr_vals.length > 0) {
+        return row.attr_vals.split(" ");
+      } else {
+        return [];
+      }
+    },
+    // 属性tag标签循环获取
+    paramsVals(row) {
+      // row.inputTagVisible = false;
+      // row.inputTagValue = "";
+      return this.changeParamsVals(row);
+    },
+    // 属性tag删除时触发
+    removeParamsTag(row, i) {
+      // 删除tag标签
+      const newTag = this.changeParamsVals(row);
+      newTag.splice(i, 1);
+      row.attr_vals = newTag.join(" ");
+      this.paramsVals(row);
+      // 发送删除标签请求
+      this.$http
+        .put(`categories/${this.cateID}/attributes/${row.attr_id}`, {
+          attr_name: row.attr_name,
+          attr_sel: row.attr_sel,
+          attr_vals: row.attr_vals
+        })
+        .then(res => {
+          return res.data;
+        })
+        .then(res => {
+          if (res.meta.status !== 200) {
+            return this.$message.error("删除tag属性标签失败！");
+          }
+          this.$message.success("删除成功！");
+        })
+        .catch(err => {
+          console.error(err);
+        });
+    },
+    // 添加tag标签的回调函数
+    handleInputConfirm(row) {
+      if (row.inputTagValue) {
+        row.attr_vals = (row.attr_vals + ` ${row.inputTagValue}`).trim();
+        row.inputTagVisible = true;
+        // 发送添加标签请求
+        this.$http
+          .put(`categories/${this.cateID}/attributes/${row.attr_id}`, {
+            attr_name: row.attr_name,
+            attr_sel: row.attr_sel,
+            attr_vals: row.attr_vals
+          })
+          .then(res => {
+            return res.data;
+          })
+          .then(res => {
+            if (res.meta.status !== 200) {
+              return this.$message.error("添加tag属性标签失败！");
+            }
+            this.$message.success("添加成功！");
+          })
+          .catch(err => {
+            console.error(err);
+          });
+      }
+      row.inputTagVisible = false;
+      row.inputTagValue = "";
+    },
+    // 添加tag按钮触发
+    showTagInput(row) {
+      row.inputTagVisible = true;
+      // this.inputTagVisible = true;
+      this.$nextTick(_ => {
+        this.$refs.saveTagInput.$refs.input.focus();
+      });
     }
   },
   computed: {
@@ -406,6 +588,12 @@ export default {
   }
   .el-table {
     margin-top: 15px;
+    .el-tag {
+      margin: 0 5px;
+    }
+  }
+  .input-new-tag {
+    margin-top: 5px;
   }
 }
 </style>
