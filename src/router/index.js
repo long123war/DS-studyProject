@@ -1,14 +1,43 @@
 import Vue from "vue";
 import VueRouter from "vue-router";
-import login from "../components/login.vue";
+// import login from "../components/login.vue";
+// import home from "../components/home.vue";
+// import welcome from "../components/welcome.vue";
+const login = () =>
+  import(
+    /* webpackChunkName: "login_home_welcome" */ "../components/login.vue"
+  );
+const home = () =>
+  import(/* webpackChunkName: "login_home_welcome" */ "../components/home.vue");
+const welcome = () =>
+  import(
+    /* webpackChunkName: "login_home_welcome" */ "../components/welcome.vue"
+  );
 import axios from "axios";
-import home from "../components/home.vue";
-import welcome from "../components/welcome.vue";
-import users from "../components/user/users.vue";
-import rights from "../components/power/rights.vue";
-import roles from "../components/power/roles.vue";
-import categories from "../components/goods/Cate.vue";
-import params from "../components/goods/params.vue";
+
+// import users from "../components/user/users.vue";
+const users = () =>
+  import(/* webpackChunkName: "users" */ "../components/user/users.vue");
+// import rights from "../components/power/rights.vue";
+// import roles from "../components/power/roles.vue";
+const rights = () =>
+  import(
+    /* webpackChunkName: "rights_roles" */ "../components/power/rights.vue"
+  );
+const roles = () =>
+  import(
+    /* webpackChunkName: "rights_roles" */ "../components/power/roles.vue"
+  );
+// import categories from "../components/goods/Cate.vue";
+// import params from "../components/goods/params.vue";
+const categories = () =>
+  import(
+    /* webpackChunkName: "categories_params" */ "../components/goods/Cate.vue"
+  );
+const params = () =>
+  import(
+    /* webpackChunkName: "categories_params" */ "../components/goods/params.vue"
+  );
 import ZkTable from "vue-table-with-tree-grid";
 // 页面加载条导入
 import NProgress from "nprogress";
